@@ -116,6 +116,7 @@ function get (request, response) {
     var options = Array.from(basenames).map(function (basename) {
       return `<option>${escapeHTML(basename)}</option>`
     })
+    var todayISO8601 = new Date().toISOString().split('T')[0]
     response.end(`
 <!doctype html>
 <html lang=en-US>
@@ -167,7 +168,7 @@ td {
         <label for=text>Text</label>
         <input name=text type=text required>
         <label for=Date>Date</label>
-        <input name=date type=date required>
+        <input name=date type=date value=${todayISO8601} required>
         <input type=submit>
       </form>
       <h2>Due</h2>
