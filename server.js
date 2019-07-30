@@ -184,6 +184,7 @@ td {
 var tinyRelativeDate = require('tiny-relative-date')
 
 function renderTable (todos) {
+  // TODO: Fix relative time.
   var today = new Date()
   today.setSeconds(0)
   today.setMinutes(0)
@@ -211,7 +212,7 @@ function renderTable (todos) {
 <tr class=${status}>
   <td>${escapeHTML(todo.basename)}</td>
   <td>${escapeHTML(cleanLine)}</td>
-  <td>${todo.date ? tinyRelativeDate(todo.date) : ''}</td>
+  <td>${todo.date ? tinyRelativeDate(todo.date, today) : ''}</td>
 </tr>
     `.trim()
   }
