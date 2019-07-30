@@ -250,7 +250,12 @@ var runSeries = require('run-series')
 var spawn = require('child_process').spawn
 
 function post (request, response) {
-  request.log.info('post')
+  var auth = basicAuth(request)
+  if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
+    response.statusCode = 401
+    response.setHeader('WWW-Authenticate', 'Basic realm=TODO')
+    return response.end()
+  }
   var basename, text, date
   request.pipe(
     new Busboy({ headers: request.headers })
