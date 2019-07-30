@@ -250,47 +250,42 @@ var runSeries = require('run-series')
 var spawn = require('child_process').spawn
 
 function post (request, response) {
+  request.log.info('post')
   var basename, text, date
   request.pipe(
     new Busboy({ headers: request.headers })
       .on('field', function (name, value) {
-        if (name === 'basename') basename = value.trim()
-        if (name === 'text') text = value.trim()
-        if (name === 'date') date = new Date(value).toISOString()
+        if (name === 'basename') {
+          basename = value.trim()
+        } else if (name === 'text') {
+          text = value.trim()
+        } else if (name === 'date') {
+          date = new Date(value).toISOString().split('T')[0]
+        }
       })
       .on('finish', function () {
-        request.log.info({ basename, text, date }, 'post')
+        request.log.info({ basename, text, date }, 'data')
         var line = text + ' ' + date
         var file = path.join(REPOSITORY, basename)
         runSeries([
-          function fetch (done) {
-            spawn('git', ['fetch', 'origin'], {
-              cwd: REPOSITORY
-            }, done)
-          },
-          function resetHard (done) {
-            spawn('git', ['reset', '--hard', 'origin/master'], {
-              cwd: REPOSITORY
-            }, done)
-          },
-          function (done) {
+          loggedTask('fetch', function (done) {
+            spawnGit(['fetch', 'origin'], done)
+          }),
+          loggedTask('reset --hard', function (done) {
+            spawnGit(['reset', '--hard', 'origin/master'], done)
+          }),
+          loggedTask('append', function (done) {
             fs.appendFile(file, '\n' + line, done)
-          },
-          function add (done) {
-            spawn('git', ['add', basename], {
-              cwd: REPOSITORY
-            }, done)
-          },
-          function commit (done) {
-            spawn('git', ['commit', '--allow-empty-message', '-m', ''], {
-              cwd: REPOSITORY
-            }, done)
-          },
-          function push (done) {
-            spawn('git', ['push', 'origin', 'master'], {
-              cwd: REPOSITORY
-            }, done)
-          }
+          }),
+          loggedTask('git add', function (done) {
+            spawnGit(['add', basename], done)
+          }),
+          loggedTask('git commit', function (done) {
+            spawnGit(['commit', '--allow-empty-message', '-m', ''], done)
+          }),
+          loggedTask('git push', function (done) {
+            spawnGit(['push', 'origin', 'master'], done)
+          })
         ], function (error) {
           if (error) {
             response.statusCode = 500
@@ -300,6 +295,26 @@ function post (request, response) {
           response.setHeader('Location', '/')
           response.end()
         })
+
+        function spawnGit (args, callback) {
+          spawn('git', args, { cwd: REPOSITORY })
+            .once('close', function (code) {
+              if (code === 0) return callback()
+              var description = `git ${args.join(' ')}`
+              callback(new Error(`${description} failed`))
+            })
+        }
+
+        function loggedTask (message, task) {
+          return function (done) {
+            task(function (error) {
+              request.log.info('start: ' + message)
+              if (error) return done(error)
+              request.log.info('end: ' + message)
+              done()
+            })
+          }
+        }
       })
   )
 }
