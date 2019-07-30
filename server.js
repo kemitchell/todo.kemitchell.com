@@ -21,6 +21,18 @@ function close () {
   })
 }
 
+var REPOSITORY = process.env.REPOSITORY
+if (!REPOSITORY) {
+  log.error('no REPOSITORY in env')
+  process.exit(1)
+}
+
+var USER = process.env.USER
+if (!USER) {
+  log.error('no USER in env')
+  process.exit(1)
+}
+
 var PASSWORD = process.env.PASSWORD
 if (!PASSWORD) {
   log.error('no PASSWORD in env')
@@ -28,21 +40,6 @@ if (!PASSWORD) {
 }
 
 var path = require('path')
-var REPOSITORY = process.env.REPOSITORY || 'todo'
-
-var USER = process.env.USER
-var PASSSWORD = process.env.PASSSWORD
-
-if (!USER) {
-  log.error('no USER in env')
-  process.exit(1)
-}
-
-if (!PASSWORD) {
-  log.error('no PASSWORD in env')
-  process.exit(1)
-}
-
 var addLogs = require('pino-http')({ logger: log })
 var parseURL = require('url-parse')
 var server = require('http').createServer(function (request, response) {
@@ -107,12 +104,17 @@ function get (request, response) {
   function render (todos) {
     var due = []
     var ongoing = []
+    var basenames = new Set()
     todos.forEach(function (todo) {
+      basenames.add(todo.basename)
       if (todo.date) due.push(todo)
       else ongoing.push(todo)
     })
     ongoing.sort(function (a, b) {
       return a.basename.localeCompare(b.basename)
+    })
+    var options = Array.from(basenames).map(function (basename) {
+      return `<option>${escapeHTML(basename)}</option>`
     })
     response.end(`
 <!doctype html>
@@ -121,7 +123,6 @@ function get (request, response) {
     <meta charset=UTF-8>
     <meta name=viewport content=width=device-width,initial-scale=1>
     <title>TODO</title>
-    <link href=https://readable.kemitchell.com/all.css rel=stylesheet>
     <style>
 table {
   border-collapse: collapse;
@@ -134,6 +135,23 @@ table {
 .today {
   color: green;
 }
+
+input {
+  display: block;
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.25rem;
+  box-sizing: border-box;
+}
+
+header, main {
+  max-width: 40rem;
+  margin: 1rem auto;
+}
+
+td {
+  padding: 0.25rem;
+}
     </style>
   </head>
   <body>
@@ -141,6 +159,17 @@ table {
       <h1>TODO</h1>
     </header>
     <main role=main>
+      <h2>New</h2>
+      <form method=post>
+        <label for=basename>Client</label>
+        <input name=basename type=text list=basenames required>
+        <datalist id=basenames>${options}</datalist>
+        <label for=text>Text</label>
+        <input name=text type=text required>
+        <label for=Date>Date</label>
+        <input name=date type=date required>
+        <input type=submit>
+      </form>
       <h2>Due</h2>
       ${renderTable(due)}
       <h2>Ongoing</h2>
@@ -150,12 +179,6 @@ table {
 </html>
     `.trim())
   }
-}
-
-var dateFormat = {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
 }
 
 var tinyRelativeDate = require('tiny-relative-date')
@@ -223,62 +246,59 @@ function processFile (basename, callback) {
 }
 
 var Busboy = require('busboy')
-var pump = require('pump')
 var runSeries = require('run-series')
+var spawn = require('child_process').spawn
 
 function post (request, response) {
+  var basename, text, date
   request.pipe(
     new Busboy({ headers: request.headers })
       .on('field', function (name, value) {
-        if (whitelist.includes(name)) data[name] = value.trim()
-      })
-      .on('file', function (field, stream, name, encoding, mime) {
-        mkdirp(attachments, function (error) {
-          if (error) return request.log.error(error)
-          var file = path.join(attachments, name)
-          pump(
-            stream,
-            fs.createWriteStream(file),
-            function (error) {
-              if (error) return request.log.error(error)
-              data.files.push(file)
-            }
-          )
-        })
+        if (name === 'basename') basename = value.trim()
+        if (name === 'text') text = value.trim()
+        if (name === 'date') date = new Date(value).toISOString()
       })
       .on('finish', function () {
+        request.log.info({ basename, text, date }, 'post')
+        var line = text + ' ' + date
+        var file = path.join(REPOSITORY, basename)
         runSeries([
-          function makeDirectory (done) {
-            mkdirp(directory, done)
+          function fetch (done) {
+            spawn('git', ['fetch', 'origin'], {
+              cwd: REPOSITORY
+            }, done)
           },
-          function writeDataFile (done) {
-            var files = data.files.map(function (entry) {
-              return { name: entry.name, mime: entry.mime }
-            })
-            var object = { data, questionnaire, files }
-            fs.writeFile(
-              path.join(directory, `data.json`),
-              JSON.stringify(object, null, 2),
-              done
-            )
+          function resetHard (done) {
+            spawn('git', ['reset', '--hard', 'origin/master'], {
+              cwd: REPOSITORY
+            }, done)
           },
-          function loadClientData (done) {
-            readClientData(data.cc, function (error, client) {
-              if (error) return done(error)
-              data.client = client
-              done()
-            })
+          function (done) {
+            fs.appendFile(file, '\n' + line, done)
           },
-          function sendEMail (done) {
-            email(data, request.log, done)
+          function add (done) {
+            spawn('git', ['add', basename], {
+              cwd: REPOSITORY
+            }, done)
+          },
+          function commit (done) {
+            spawn('git', ['commit', '--allow-empty-message', '-m', ''], {
+              cwd: REPOSITORY
+            }, done)
+          },
+          function push (done) {
+            spawn('git', ['push', 'origin', 'master'], {
+              cwd: REPOSITORY
+            }, done)
           }
         ], function (error) {
           if (error) {
-            request.log.error(error)
             response.statusCode = 500
-            return response.end(`<p>Internal Error</p>`)
+            return response.end(error.message)
           }
-          response.end('<p>Success! You should receive an e-mail shortly.</p>')
+          response.statusCode = 303
+          response.setHeader('Location', '/')
+          response.end()
         })
       })
   )
@@ -286,5 +306,5 @@ function post (request, response) {
 
 server.listen(process.env.PORT || 8080, function () {
   var port = this.address().port
-  log.info({ port }, 'litening')
+  log.info({ port }, 'listening')
 })
