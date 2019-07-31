@@ -21,6 +21,8 @@ function close () {
   })
 }
 
+var TITLE = process.env.TITLE || 'To-Do List'
+
 var REPOSITORY = process.env.REPOSITORY
 if (!REPOSITORY) {
   log.error('no REPOSITORY in env')
@@ -123,7 +125,7 @@ function get (request, response) {
   <head>
     <meta charset=UTF-8>
     <meta name=viewport content=width=device-width,initial-scale=1>
-    <title>TODO</title>
+    <title>${escapeHTML(TITLE)}</title>
     <style>
 table {
   border-collapse: collapse;
@@ -157,7 +159,7 @@ td {
   </head>
   <body>
     <header role=banner>
-      <h1>TODO</h1>
+      <h1>${escapeHTML(TODO)}</h1>
     </header>
     <main role=main>
       <h2>New</h2>
