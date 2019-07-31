@@ -275,11 +275,8 @@ function post (request, response) {
         var line = text + ' ' + date
         var file = path.join(REPOSITORY, basename)
         runSeries([
-          loggedTask('fetch', function (done) {
-            spawnGit(['fetch', 'origin'], done)
-          }),
-          loggedTask('reset --hard', function (done) {
-            spawnGit(['reset', '--hard', 'origin/master'], done)
+          loggedTask('reset', function (done) {
+            resetToOriginMaster(done)
           }),
           loggedTask('append', function (done) {
             fs.appendFile(file, '\n' + line, done)
@@ -303,15 +300,6 @@ function post (request, response) {
           response.end()
         })
 
-        function spawnGit (args, callback) {
-          spawn('git', args, { cwd: REPOSITORY })
-            .once('close', function (code) {
-              if (code === 0) return callback()
-              var description = `git ${args.join(' ')}`
-              callback(new Error(`${description} failed`))
-            })
-        }
-
         function loggedTask (message, task) {
           return function (done) {
             task(function (error) {
@@ -326,7 +314,36 @@ function post (request, response) {
   )
 }
 
+function spawnGit (args, callback) {
+  spawn('git', args, { cwd: REPOSITORY })
+    .once('close', function (code) {
+      if (code === 0) return callback()
+      var description = `git ${args.join(' ')}`
+      callback(new Error(`${description} failed`))
+    })
+}
+
+function resetToOriginMaster (callback) {
+  runSeries([
+    function (done) {
+      spawnGit(['fetch', 'origin'], done)
+    },
+    function (done) {
+      spawnGit(['reset', '--hard', 'origin/master'], done)
+    }
+  ], callback)
+}
+
 server.listen(process.env.PORT || 8080, function () {
   var port = this.address().port
   log.info({ port }, 'listening')
+})
+
+var schedule = require('node-schedule')
+var EVERY_TEN_MINUTES = '*/10 * * * *'
+schedule.scheduleJob(EVERY_TEN_MINUTES, function () {
+  resetToOriginMaster(function (error) {
+    if (error) return log.error(error)
+    log.info('reset')
+  })
 })
