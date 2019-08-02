@@ -185,7 +185,7 @@ td {
       <h2>Tasks</h2>
       ${renderTable(withDueDate, true)}
       <h2>Ongoing</h2>
-      ${renderTable(ongoing, false)}
+      ${renderLists(ongoing)}
     </main>
   </body>
 </html>
@@ -215,9 +215,6 @@ function renderTable (todos, dateColumn) {
         status = 'overdue'
       }
     }
-    var cleanLine = todo.line
-      .replace(dateRE, '')
-      .replace(continuingRE, '')
     if (dateString) {
       if (todo.today) dateString = 'today'
       else dateString = tinyRelativeDate(dateString, today)
@@ -225,11 +222,42 @@ function renderTable (todos, dateColumn) {
     return `
 <tr class=${status}>
   <td>${escapeHTML(todo.basename)}</td>
-  <td>${escapeHTML(cleanLine)}</td>
+  <td>${escapeHTML(lineToDisplay(todo))}</td>
   ${dateColumn ? `<td>${dateString}</td>` : ''}
 </tr>
     `.trim()
   }
+}
+
+function renderLists (todos) {
+  var basenames = new Set()
+  todos.forEach(function (todo) {
+    basenames.add(todo.basename)
+  })
+  basenames = Array.from(basenames)
+  return basenames
+    .map(function (basename) {
+      var subset = todos
+        .filter(function (todo) {
+          return todo.basename === basename
+        })
+        .sort(function (a, b) {
+          return a.line.toLowerCase().localeCompare(b.line.toLowerCase())
+        })
+      return `
+      <h3>${escapeHTML(basename)}</h3>
+      <ul>
+        ${subset.map((todo) => `<li>${lineToDisplay(todo)}</li>`).join('')}
+      </ul>
+      `.trim()
+    })
+    .join('')
+}
+
+function lineToDisplay (todo) {
+  return todo.line
+    .replace(dateRE, '')
+    .replace(continuingRE, '')
 }
 
 var dateRE = /(\d\d\d\d-\d\d-\d\d)/
