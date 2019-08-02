@@ -1,2 +1,2 @@
 #!/bin/sh
-ssh todo.kemitchell.com ./update-todo
+ssh todo.kemitchell.com "source \$HOME/.profile && ./update-todo"
