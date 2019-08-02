@@ -64,12 +64,12 @@ function get (request, response) {
   var auth = basicAuth(request)
   if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
     response.statusCode = 401
-    response.setHeader('WWW-Authenticate', 'Basic realm=TODO')
+    response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
   }
   fs.readdir(REPOSITORY, function (error, entries) {
     if (error) return internalError(error)
-    var tasks = entries
+    var withDueDate = entries
       .filter(function (entry) {
         return entry !== 'sort' && !entry.startsWith('.')
       })
@@ -78,15 +78,15 @@ function get (request, response) {
           processFile(entry, done)
         }
       })
-    runParallel(tasks, function (error, results) {
+    runParallel(withDueDate, function (error, results) {
       if (error) return internalError(error)
       var todos = results
         .reduce(function (items, array) {
           return items.concat(array)
         })
         .sort(function (a, b) {
-          if (a.date && b.date) {
-            return a.date - b.date
+          if (a.dateString && b.dateString) {
+            return compareDateStrings(a.dateString, b.dateString)
           } else if (a.date) {
             return -1
           } else {
@@ -104,13 +104,21 @@ function get (request, response) {
   }
 
   function render (todos) {
-    var due = []
+    var withDueDate = []
+    var today = new Date()
+    var todayString = dateToString(today)
+    var dueToday = []
     var ongoing = []
     var basenames = new Set()
     todos.forEach(function (todo) {
       basenames.add(todo.basename)
-      if (todo.date) due.push(todo)
-      else ongoing.push(todo)
+      if (todo.dateString) {
+        withDueDate.push(todo)
+        if (todayString === todo.dateString) {
+          todo.today = true
+          dueToday.push(todo)
+        }
+      } else ongoing.push(todo)
     })
     ongoing.sort(function (a, b) {
       return a.basename.localeCompare(b.basename)
@@ -118,7 +126,6 @@ function get (request, response) {
     var options = Array.from(basenames).map(function (basename) {
       return `<option>${escapeHTML(basename)}</option>`
     })
-    var todayISO8601 = new Date().toISOString().split('T')[0]
     response.end(`
 <!doctype html>
 <html lang=en-US>
@@ -170,13 +177,15 @@ td {
         <label for=text>Text</label>
         <input name=text type=text required>
         <label for=Date>Date</label>
-        <input name=date type=date value=${todayISO8601} required>
+        <input name=date type=date value=${todayString} required>
         <input type=submit>
       </form>
-      <h2>Due</h2>
-      ${renderTable(due)}
+      <h2>Today</h2>
+      ${renderTable(dueToday, false)}
+      <h2>Tasks</h2>
+      ${renderTable(withDueDate, true)}
       <h2>Ongoing</h2>
-      ${renderTable(ongoing)}
+      ${renderTable(ongoing, false)}
     </main>
   </body>
 </html>
@@ -186,13 +195,9 @@ td {
 
 var tinyRelativeDate = require('tiny-relative-date')
 
-function renderTable (todos) {
-  // TODO: Fix relative time.
+function renderTable (todos, dateColumn) {
   var today = new Date()
-  today.setSeconds(0)
-  today.setMinutes(0)
-  today.setMilliseconds(0)
-  today = today.getTime()
+  var todayString = dateToString(today)
   return `
   <table>
     <tbody>
@@ -203,19 +208,25 @@ function renderTable (todos) {
 
   function row (todo) {
     var status = ''
-    if (todo.date) {
-      var time = todo.date.getTime()
-      if (time < today) status = 'overdue'
-      else if (time === today) status = 'today'
+    var dateString = todo.dateString || ''
+    if (dateString) {
+      if (dateString === todayString) status = 'today'
+      else if (compareDateStrings(dateString, todayString) === -1) {
+        status = 'overdue'
+      }
     }
     var cleanLine = todo.line
       .replace(dateRE, '')
       .replace(continuingRE, '')
+    if (dateString) {
+      if (todo.today) dateString = 'today'
+      else dateString = tinyRelativeDate(dateString, today)
+    }
     return `
 <tr class=${status}>
   <td>${escapeHTML(todo.basename)}</td>
   <td>${escapeHTML(cleanLine)}</td>
-  <td>${todo.date ? tinyRelativeDate(todo.date, today) : ''}</td>
+  ${dateColumn ? `<td>${dateString}</td>` : ''}
 </tr>
     `.trim()
   }
@@ -237,8 +248,8 @@ function processFile (basename, callback) {
     lines.forEach(function (line) {
       var dateMatch = dateRE.exec(line)
       if (dateMatch) {
-        var date = new Date(dateMatch[1])
-        results.push({ date, line, basename })
+        var dateString = dateMatch[1]
+        results.push({ dateString, line, basename })
       }
       var continuingMatch = continuingRE.exec(line)
       if (continuingMatch) {
@@ -257,7 +268,7 @@ function post (request, response) {
   var auth = basicAuth(request)
   if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
     response.statusCode = 401
-    response.setHeader('WWW-Authenticate', 'Basic realm=TODO')
+    response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
   }
   var basename, text, date
@@ -269,12 +280,12 @@ function post (request, response) {
         } else if (name === 'text') {
           text = value.trim()
         } else if (name === 'date') {
-          date = new Date(value).toISOString().split('T')[0]
+          date = new Date(value)
         }
       })
       .on('finish', function () {
         request.log.info({ basename, text, date }, 'data')
-        var line = text + ' ' + date
+        var line = text + ' ' + dateToString(date)
         var file = path.join(REPOSITORY, basename)
         runSeries([
           loggedTask('reset', function (done) {
@@ -349,3 +360,15 @@ schedule.scheduleJob(EVERY_TEN_MINUTES, function () {
     log.info('reset')
   })
 })
+
+function dateToString (date) {
+  return (
+    date.getFullYear() + '-' +
+    (date.getMonth() + 1).toString().padStart(2, '0') + '-' +
+    date.getDate().toString().padStart(2, '0')
+  )
+}
+
+function compareDateStrings (a, b) {
+  return a.localeCompare(b)
+}
