@@ -356,11 +356,19 @@ function post (request, response) {
 }
 
 function spawnGit (args, callback) {
-  spawn('git', args, { cwd: REPOSITORY })
+  var process = spawn('git', args, { cwd: REPOSITORY })
     .once('close', function (code) {
       if (code === 0) return callback()
-      var description = `git ${args.join(' ')}`
-      callback(new Error(`${description} failed`))
+      var chunks = []
+      process.stderr
+        .on('data', function (chunk) {
+          chunks.push(chunk)
+        })
+        .once('end', function () {
+          var output = Buffer.concat(chunks).toString()
+          var description = `git ${args.join(' ')}`
+          callback(new Error(`${description} failed:\n` + output))
+        })
     })
 }
 
