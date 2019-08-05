@@ -329,7 +329,7 @@ function post (request, response) {
             spawnGit(['commit', '--allow-empty-message', '-m', ''], done)
           }),
           loggedTask('git push', function (done) {
-            spawnGit(['push', 'origin', 'master'], done)
+            spawnGit(['push'], done)
           })
         ], function (error) {
           if (error) {
