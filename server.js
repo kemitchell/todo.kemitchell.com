@@ -320,7 +320,7 @@ function post (request, response) {
             resetToOriginMaster(done)
           }),
           loggedTask('append', function (done) {
-            fs.appendFile(file, '\n' + line, done)
+            fs.appendFile(file, '\n' + line + '\n', done)
           }),
           loggedTask('git add', function (done) {
             spawnGit(['add', basename], done)
