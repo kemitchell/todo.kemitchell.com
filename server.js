@@ -245,7 +245,7 @@ function renderLists (todos) {
           return a.line.toLowerCase().localeCompare(b.line.toLowerCase())
         })
       return `
-      <h3>${escapeHTML(basename)}</h3>
+      <h3 id="${escapeHTML(basename)}">${escapeHTML(basename)}</h3>
       <ul>
         ${subset.map((todo) => `<li>${lineToDisplay(todo)}</li>`).join('')}
       </ul>
