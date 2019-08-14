@@ -139,7 +139,7 @@ table {
 }
 
 .overdue {
-  background-color: rgba(200, 0, 0, 0.25);
+  color: darkred;
 }
 
 .today {
