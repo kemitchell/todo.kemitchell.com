@@ -1,5 +1,7 @@
 var log = require('pino')()
 
+var lastUpdated = null
+
 process.on('SIGINT', trap)
 process.on('SIGQUIT', trap)
 process.on('SIGTERM', trap)
@@ -169,6 +171,7 @@ td {
       <h1>${escapeHTML(TITLE)}</h1>
     </header>
     <main role=main>
+      <p>Last Updated: ${lastUpdated ? dateToString(lastUpdated) : ''}</p>
       <h2>New</h2>
       <form method=post>
         <label for=basename>Client</label>
@@ -394,6 +397,7 @@ schedule.scheduleJob(EVERY_TEN_MINUTES, function () {
   resetToOriginMaster(function (error) {
     if (error) return log.error(error)
     log.info('reset')
+    lastUpdated = new Date()
   })
 })
 
