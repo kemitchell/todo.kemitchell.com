@@ -171,7 +171,7 @@ td {
       <h1>${escapeHTML(TITLE)}</h1>
     </header>
     <main role=main>
-      <p>Last Updated: ${lastUpdated ? dateToString(lastUpdated) : ''}</p>
+      <p>Last Updated: ${lastUpdated ? tinyRelativeDate(lastUpdated, new Date()) : ''}</p>
       <h2>New</h2>
       <form method=post>
         <label for=basename>Client</label>
