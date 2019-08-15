@@ -383,12 +383,20 @@ function resetToOriginMaster (callback) {
     function (done) {
       spawnGit(['reset', '--hard', 'origin/master'], done)
     }
-  ], callback)
+  ], function (error) {
+    if (error) return callback(error)
+    lastUpdated = new Date()
+    callback()
+  })
 }
 
 server.listen(process.env.PORT || 8080, function () {
   var port = this.address().port
   log.info({ port }, 'listening')
+})
+
+resetToOriginMaster(function () {
+  log.info('reset')
 })
 
 var schedule = require('node-schedule')
@@ -397,7 +405,6 @@ schedule.scheduleJob(EVERY_TEN_MINUTES, function () {
   resetToOriginMaster(function (error) {
     if (error) return log.error(error)
     log.info('reset')
-    lastUpdated = new Date()
   })
 })
 
