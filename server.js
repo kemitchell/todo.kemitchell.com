@@ -61,6 +61,8 @@ var basicAuth = require('basic-auth')
 var escapeHTML = require('escape-html')
 var fs = require('fs')
 var runParallel = require('run-parallel')
+var moment = require('moment-timezone')
+var TZ = 'America/Los_Angeles'
 
 function get (request, response) {
   var auth = basicAuth(request)
@@ -171,7 +173,7 @@ td {
       <h1>${escapeHTML(TITLE)}</h1>
     </header>
     <main role=main>
-      <p>Last Updated: ${lastUpdated ? tinyRelativeDate(lastUpdated, new Date()) : ''}</p>
+      <p>Last Updated: ${lastUpdated ? moment(lastUpdated, TZ).fromNow() : ''}</p>
       <h2>New</h2>
       <form method=post>
         <label for=basename>Client</label>
@@ -196,8 +198,6 @@ td {
   }
 }
 
-var tinyRelativeDate = require('tiny-relative-date')
-
 function renderTable (todos, dateColumn) {
   var today = new Date()
   var todayString = dateToString(today)
@@ -220,13 +220,13 @@ function renderTable (todos, dateColumn) {
     }
     if (dateString) {
       if (todo.today) dateString = 'today'
-      else dateString = tinyRelativeDate(dateString, today)
+      else dateString = moment(dateString, TZ).fromNow()
     }
     return `
 <tr class=${status}>
   <td>${escapeHTML(todo.basename)}</td>
   <td>${escapeHTML(lineToDisplay(todo))}</td>
-  ${dateColumn ? `<td>${dateString}</td>` : ''}
+  ${dateColumn ? `<td title="${todo.dateString}">${dateString}</td>` : ''}
 </tr>
     `.trim()
   }
