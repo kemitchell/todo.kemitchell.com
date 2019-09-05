@@ -62,6 +62,8 @@ var escapeHTML = require('escape-html')
 var fs = require('fs')
 var runParallel = require('run-parallel')
 var moment = require('moment-timezone')
+var linkifyURLs = require('linkify-urls')
+
 var TZ = 'America/Los_Angeles'
 
 function get (request, response) {
@@ -140,6 +142,15 @@ function get (request, response) {
     <style>
 table {
   border-collapse: collapse;
+}
+
+a[href] {
+  color:inherit;
+  text-decoration: none;
+}
+
+a[href]:hover {
+  text-decoration: underline;
 }
 
 .overdue {
@@ -225,7 +236,7 @@ function renderTable (todos, dateColumn) {
     return `
 <tr class=${status}>
   <td>${escapeHTML(todo.basename)}</td>
-  <td>${escapeHTML(lineToDisplay(todo))}</td>
+  <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
   ${dateColumn ? `<td title="${todo.dateString}">${dateString}</td>` : ''}
 </tr>
     `.trim()
