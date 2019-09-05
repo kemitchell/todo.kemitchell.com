@@ -111,16 +111,16 @@ function get (request, response) {
 
   function render (todos) {
     var withDueDate = []
-    var today = new Date()
-    var todayString = dateToString(today)
+    var todayMoment = moment()
     var dueToday = []
     var ongoing = []
     var basenames = new Set()
     todos.forEach(function (todo) {
       basenames.add(todo.basename)
       if (todo.dateString) {
+        var todoMoment = moment.tz(todo.dateString, TZ)
         withDueDate.push(todo)
-        if (todayString === todo.dateString) {
+        if (todoMoment.isSame(todayMoment, 'day')) {
           todo.today = true
           dueToday.push(todo)
         }
@@ -184,7 +184,7 @@ td {
       <h1>${escapeHTML(TITLE)}</h1>
     </header>
     <main role=main>
-      <p>Last Updated: ${lastUpdated ? moment(lastUpdated, TZ).fromNow() : ''}</p>
+      <p>Last Updated: ${lastUpdated ? lastUpdated.fromNow() : ''}</p>
       <h2>New</h2>
       <form method=post>
         <label for=basename>Client</label>
@@ -193,7 +193,7 @@ td {
         <label for=text>Text</label>
         <input name=text type=text required>
         <label for=Date>Date</label>
-        <input name=date type=date value=${todayString} required>
+        <input name=date type=date value=${moment().tz(TZ).format('YYYY-MM-DD')} required>
         <input type=submit>
       </form>
       <h2>Today</h2>
@@ -210,8 +210,7 @@ td {
 }
 
 function renderTable (todos, dateColumn) {
-  var today = new Date()
-  var todayString = dateToString(today)
+  var todayMoment = moment()
   return `
   <table>
     <tbody>
@@ -223,9 +222,10 @@ function renderTable (todos, dateColumn) {
   function row (todo) {
     var status = ''
     var dateString = todo.dateString || ''
+    var todoMoment = moment.tz(dateString, TZ)
     if (dateString) {
-      if (dateString === todayString) status = 'today'
-      else if (compareDateStrings(dateString, todayString) === -1) {
+      if (todoMoment.isSame(todayMoment, 'day')) status = 'today'
+      else if (todoMoment.isBefore(todayMoment)) {
         status = 'overdue'
       }
     }
@@ -396,7 +396,7 @@ function resetToOriginMaster (callback) {
     }
   ], function (error) {
     if (error) return callback(error)
-    lastUpdated = new Date()
+    lastUpdated = moment().tz(TZ)
     callback()
   })
 }
