@@ -174,8 +174,9 @@ header, main {
   margin: 1rem auto;
 }
 
-td {
+th, td {
   padding: 0.25rem;
+  vertical-align: top;
 }
     </style>
   </head>
