@@ -19,7 +19,7 @@
     "run-series": "^1.1.8",
     "simple-concat": "^1.0.0",
     "url-parse": "^1.4.7",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "licensee": "^7.0.3",
