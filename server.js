@@ -93,7 +93,7 @@ function get (request, response) {
         .sort(function (a, b) {
           if (a.dateString && b.dateString) {
             return compareDateStrings(a.dateString, b.dateString)
-          } else if (a.date) {
+          } else if (a.dateString) {
             return -1
           } else {
             return 1
@@ -429,5 +429,5 @@ function dateToString (date) {
 }
 
 function compareDateStrings (a, b) {
-  return a.localeCompare(b)
+  return a.trim().localeCompare(b.trim())
 }
