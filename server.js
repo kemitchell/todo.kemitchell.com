@@ -232,7 +232,7 @@ function renderTable (todos, dateColumn) {
     }
     if (dateString) {
       if (todo.today) dateString = 'today'
-      else dateString = moment(dateString, TZ).fromNow()
+      else dateString = todoMoment.fromNow()
     }
     return `
 <tr class=${status}>
