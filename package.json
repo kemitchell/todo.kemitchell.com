@@ -4,7 +4,7 @@
   "dependencies": {
     "basic-auth": "^2.0.1",
     "busboy": "^0.3.1",
-    "commonmark": "^0.29.0",
+    "commonmark": "^0.29.2",
     "escape-html": "^1.0.3",
     "form-data": "^2.5.1",
     "has": "^1.0.3",
