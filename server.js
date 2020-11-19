@@ -1,6 +1,6 @@
-var log = require('pino')()
+const log = require('pino')()
 
-var lastUpdated = null
+let lastUpdated = null
 
 process.on('SIGINT', trap)
 process.on('SIGQUIT', trap)
@@ -23,51 +23,51 @@ function close () {
   })
 }
 
-var TITLE = process.env.TITLE || 'To-Do List'
+const TITLE = process.env.TITLE || 'To-Do List'
 
-var REPOSITORY = process.env.REPOSITORY
+const REPOSITORY = process.env.REPOSITORY
 if (!REPOSITORY) {
   log.error('no REPOSITORY in env')
   process.exit(1)
 }
 
-var USER = process.env.USER
+const USER = process.env.USER
 if (!USER) {
   log.error('no USER in env')
   process.exit(1)
 }
 
-var PASSWORD = process.env.PASSWORD
+const PASSWORD = process.env.PASSWORD
 if (!PASSWORD) {
   log.error('no PASSWORD in env')
   process.exit(1)
 }
 
-var path = require('path')
-var addLogs = require('pino-http')({ logger: log })
-var parseURL = require('url-parse')
-var server = require('http').createServer(function (request, response) {
+const path = require('path')
+const addLogs = require('pino-http')({ logger: log })
+const parseURL = require('url-parse')
+const server = require('http').createServer(function (request, response) {
   addLogs(request, response)
-  var parsed = parseURL(request.url, true)
+  const parsed = parseURL(request.url, true)
   request.query = parsed.query
-  var method = request.method
+  const method = request.method
   if (method === 'GET') return get(request, response)
   if (method === 'POST') return post(request, response)
   response.statusCode = 405
   response.end()
 })
 
-var basicAuth = require('basic-auth')
-var escapeHTML = require('escape-html')
-var fs = require('fs')
-var runParallel = require('run-parallel')
-var moment = require('moment-timezone')
-var linkifyURLs = require('linkify-urls')
+const basicAuth = require('basic-auth')
+const escapeHTML = require('escape-html')
+const fs = require('fs')
+const runParallel = require('run-parallel')
+const moment = require('moment-timezone')
+const linkifyURLs = require('linkify-urls')
 
-var TZ = 'America/Los_Angeles'
+const TZ = 'America/Los_Angeles'
 
 function get (request, response) {
-  var auth = basicAuth(request)
+  const auth = basicAuth(request)
   if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
@@ -75,7 +75,7 @@ function get (request, response) {
   }
   fs.readdir(REPOSITORY, function (error, entries) {
     if (error) return internalError(error)
-    var withDueDate = entries
+    const withDueDate = entries
       .filter(function (entry) {
         return entry !== 'sort' && !entry.startsWith('.')
       })
@@ -86,7 +86,7 @@ function get (request, response) {
       })
     runParallel(withDueDate, function (error, results) {
       if (error) return internalError(error)
-      var todos = results
+      const todos = results
         .reduce(function (items, array) {
           return items.concat(array)
         })
@@ -110,15 +110,15 @@ function get (request, response) {
   }
 
   function render (todos) {
-    var withDueDate = []
-    var todayMoment = moment()
-    var dueToday = []
-    var ongoing = []
-    var basenames = new Set()
+    const withDueDate = []
+    const todayMoment = moment()
+    const dueToday = []
+    const ongoing = []
+    const basenames = new Set()
     todos.forEach(function (todo) {
       basenames.add(todo.basename)
       if (todo.dateString) {
-        var todoMoment = moment.tz(todo.dateString, TZ)
+        const todoMoment = moment.tz(todo.dateString, TZ)
         withDueDate.push(todo)
         if (todoMoment.isSame(todayMoment, 'day')) {
           todo.today = true
@@ -129,7 +129,7 @@ function get (request, response) {
     ongoing.sort(function (a, b) {
       return a.basename.localeCompare(b.basename)
     })
-    var options = Array.from(basenames).map(function (basename) {
+    const options = Array.from(basenames).map(function (basename) {
       return `<option>${escapeHTML(basename)}</option>`
     })
     response.end(`
@@ -211,7 +211,7 @@ th, td {
 }
 
 function renderTable (todos, dateColumn) {
-  var todayMoment = moment()
+  const todayMoment = moment()
   return `
   <table>
     <tbody>
@@ -221,9 +221,9 @@ function renderTable (todos, dateColumn) {
   `.trim()
 
   function row (todo) {
-    var status = ''
-    var dateString = todo.dateString || ''
-    var todoMoment = moment.tz(dateString, TZ)
+    let status = ''
+    let dateString = todo.dateString || ''
+    const todoMoment = moment.tz(dateString, TZ)
     if (dateString) {
       if (todoMoment.isSame(todayMoment, 'day')) status = 'today'
       else if (todoMoment.isBefore(todayMoment)) {
@@ -245,14 +245,14 @@ function renderTable (todos, dateColumn) {
 }
 
 function renderLists (todos) {
-  var basenames = new Set()
+  let basenames = new Set()
   todos.forEach(function (todo) {
     basenames.add(todo.basename)
   })
   basenames = Array.from(basenames)
   return basenames
     .map(function (basename) {
-      var subset = todos
+      const subset = todos
         .filter(function (todo) {
           return todo.basename === basename
         })
@@ -275,26 +275,26 @@ function lineToDisplay (todo) {
     .replace(continuingRE, '')
 }
 
-var dateRE = /(\d\d\d\d-\d\d-\d\d)/
-var continuingRE = /\.\.\./
+const dateRE = /(\d\d\d\d-\d\d-\d\d)/
+const continuingRE = /\.\.\./
 
 function processFile (basename, callback) {
-  var file = path.join(REPOSITORY, basename)
+  const file = path.join(REPOSITORY, basename)
   fs.readFile(file, 'utf8', function (error, text) {
     if (error) return callback(error)
-    var lines = text
+    const lines = text
       .split('\n')
       .filter(function (element) {
         return !!element
       })
-    var results = []
+    const results = []
     lines.forEach(function (line) {
-      var dateMatch = dateRE.exec(line)
+      const dateMatch = dateRE.exec(line)
       if (dateMatch) {
-        var dateString = dateMatch[1]
+        const dateString = dateMatch[1]
         results.push({ dateString, line, basename })
       }
-      var continuingMatch = continuingRE.exec(line)
+      const continuingMatch = continuingRE.exec(line)
       if (continuingMatch) {
         results.push({ line, continuing: true, basename })
       }
@@ -303,18 +303,18 @@ function processFile (basename, callback) {
   })
 }
 
-var Busboy = require('busboy')
-var runSeries = require('run-series')
-var spawn = require('child_process').spawn
+const Busboy = require('busboy')
+const runSeries = require('run-series')
+const spawn = require('child_process').spawn
 
 function post (request, response) {
-  var auth = basicAuth(request)
+  const auth = basicAuth(request)
   if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
   }
-  var basename, text, date
+  let basename, text, date
   request.pipe(
     new Busboy({ headers: request.headers })
       .on('field', function (name, value) {
@@ -328,8 +328,8 @@ function post (request, response) {
       })
       .on('finish', function () {
         request.log.info({ basename, text, date }, 'data')
-        var line = text + ' ' + dateToString(date)
-        var file = path.join(REPOSITORY, basename)
+        const line = text + ' ' + dateToString(date)
+        const file = path.join(REPOSITORY, basename)
         runSeries([
           loggedTask('reset', function (done) {
             resetToOriginMaster(done)
@@ -371,17 +371,17 @@ function post (request, response) {
 }
 
 function spawnGit (args, callback) {
-  var process = spawn('git', args, { cwd: REPOSITORY })
+  spawn('git', args, { cwd: REPOSITORY })
     .once('close', function (code) {
       if (code === 0) return callback()
-      var chunks = []
+      const chunks = []
       process.stderr
         .on('data', function (chunk) {
           chunks.push(chunk)
         })
         .once('end', function () {
-          var output = Buffer.concat(chunks).toString()
-          var description = `git ${args.join(' ')}`
+          const output = Buffer.concat(chunks).toString()
+          const description = `git ${args.join(' ')}`
           callback(new Error(`${description} failed:\n` + output))
         })
     })
@@ -403,7 +403,7 @@ function resetToOriginMaster (callback) {
 }
 
 server.listen(process.env.PORT || 8080, function () {
-  var port = this.address().port
+  const port = this.address().port
   log.info({ port }, 'listening')
 })
 
@@ -411,8 +411,8 @@ resetToOriginMaster(function () {
   log.info('reset')
 })
 
-var schedule = require('node-schedule')
-var EVERY_TEN_MINUTES = '*/10 * * * *'
+const schedule = require('node-schedule')
+const EVERY_TEN_MINUTES = '*/10 * * * *'
 schedule.scheduleJob(EVERY_TEN_MINUTES, function () {
   resetToOriginMaster(function (error) {
     if (error) return log.error(error)

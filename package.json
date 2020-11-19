@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "licensee": "^8.1.0",
-    "standard": "^14.3.0"
+    "standard": "^16.0.3"
   },
   "scripts": {
     "licenses": "licensee --errors-only",
