@@ -6,7 +6,7 @@
     "busboy": "^0.3.1",
     "commonmark": "^0.29.2",
     "escape-html": "^1.0.3",
-    "form-data": "^2.5.1",
+    "form-data": "^3.0.0",
     "has": "^1.0.3",
     "linkify-urls": "^3.1.1",
     "moment": "^2.29.1",
