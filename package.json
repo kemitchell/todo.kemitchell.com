@@ -22,7 +22,7 @@
     "uuid": "^3.3.3"
   },
   "devDependencies": {
-    "licensee": "^7.0.3",
+    "licensee": "^8.1.0",
     "standard": "^14.3.0"
   },
   "scripts": {
