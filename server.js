@@ -31,9 +31,9 @@ if (!REPOSITORY) {
   process.exit(1)
 }
 
-const USER = process.env.USER
-if (!USER) {
-  log.error('no USER in env')
+const USERNAME = process.env.USERNAME
+if (!USERNAME) {
+  log.error('no USERNAME in env')
   process.exit(1)
 }
 
@@ -75,7 +75,7 @@ const TZ = 'America/Los_Angeles'
 
 function get (request, response) {
   const auth = basicAuth(request)
-  if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
+  if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
@@ -319,7 +319,7 @@ const spawn = require('child_process').spawn
 
 function post (request, response) {
   const auth = basicAuth(request)
-  if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
+  if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
