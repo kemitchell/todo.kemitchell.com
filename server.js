@@ -46,13 +46,20 @@ if (!PASSWORD) {
 const path = require('path')
 const addLogs = require('pino-http')({ logger: log })
 const parseURL = require('url-parse')
+const refreshPath = '/refresh'
 const server = require('http').createServer(function (request, response) {
   addLogs(request, response)
   const parsed = parseURL(request.url, true)
   request.query = parsed.query
   const method = request.method
   if (method === 'GET') return get(request, response)
-  if (method === 'POST') return post(request, response)
+  if (method === 'POST') {
+    if (parsed.pathname === '/refresh') {
+      return refresh(request, response)
+    } else {
+      return post(request, response)
+    }
+  }
   response.statusCode = 405
   response.end()
 })
@@ -186,6 +193,9 @@ th, td {
     </header>
     <main role=main>
       <p>Last Updated: ${lastUpdated ? lastUpdated.fromNow() : ''}</p>
+      <form method=post action=${refreshPath}>
+        <input type=submit value="Refresh">
+      </form>
       <h2>New</h2>
       <form method=post>
         <label for=basename>Client</label>
@@ -368,6 +378,18 @@ function post (request, response) {
         }
       })
   )
+}
+
+function refresh (request, response) {
+  resetToOriginMaster(error => {
+    if (error) {
+      response.statusCode = 500
+      response.end(error.toString())
+    }
+    response.statusCode = 303
+    response.setHeader('Location', '/')
+    response.end()
+  })
 }
 
 function spawnGit (args, callback) {
