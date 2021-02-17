@@ -5,7 +5,7 @@ let lastUpdated = null
 process.on('SIGINT', trap)
 process.on('SIGQUIT', trap)
 process.on('SIGTERM', trap)
-process.on('uncaughtException', function (exception) {
+process.on('uncaughtException', exception => {
   log.error(exception, 'uncaughtException')
   close()
 })
@@ -17,7 +17,7 @@ function trap (signal) {
 
 function close () {
   log.info('closing')
-  server.close(function () {
+  server.close(() => {
     log.info('closed')
     process.exit(0)
   })
@@ -47,7 +47,7 @@ const path = require('path')
 const addLogs = require('pino-http')({ logger: log })
 const parseURL = require('url-parse')
 const refreshPath = '/refresh'
-const server = require('http').createServer(function (request, response) {
+const server = require('http').createServer((request, response) => {
   addLogs(request, response)
   const parsed = parseURL(request.url, true)
   request.query = parsed.query
@@ -80,24 +80,18 @@ function get (request, response) {
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
   }
-  fs.readdir(REPOSITORY, function (error, entries) {
+  fs.readdir(REPOSITORY, (error, entries) => {
     if (error) return internalError(error)
     const withDueDate = entries
-      .filter(function (entry) {
+      .filter(entry => {
         return entry !== 'sort' && !entry.startsWith('.')
       })
-      .map(function (entry) {
-        return function (done) {
-          processFile(entry, done)
-        }
-      })
-    runParallel(withDueDate, function (error, results) {
+      .map(entry => done => { processFile(entry, done) })
+    runParallel(withDueDate, (error, results) => {
       if (error) return internalError(error)
       const todos = results
-        .reduce(function (items, array) {
-          return items.concat(array)
-        })
-        .sort(function (a, b) {
+        .reduce((items, array) => items.concat(array))
+        .sort((a, b) => {
           if (a.dateString && b.dateString) {
             return compareDateStrings(a.dateString, b.dateString)
           } else if (a.dateString) {
@@ -122,7 +116,7 @@ function get (request, response) {
     const dueToday = []
     const ongoing = []
     const basenames = new Set()
-    todos.forEach(function (todo) {
+    todos.forEach(todo => {
       basenames.add(todo.basename)
       if (todo.dateString) {
         const todoMoment = moment.tz(todo.dateString, TZ)
@@ -133,10 +127,8 @@ function get (request, response) {
         }
       } else ongoing.push(todo)
     })
-    ongoing.sort(function (a, b) {
-      return a.basename.localeCompare(b.basename)
-    })
-    const options = Array.from(basenames).map(function (basename) {
+    ongoing.sort((a, b) => a.basename.localeCompare(b.basename))
+    const options = Array.from(basenames).map(basename => {
       return `<option>${escapeHTML(basename)}</option>`
     })
     response.end(`
@@ -256,17 +248,15 @@ function renderTable (todos, dateColumn) {
 
 function renderLists (todos) {
   let basenames = new Set()
-  todos.forEach(function (todo) {
+  todos.forEach(todo => {
     basenames.add(todo.basename)
   })
   basenames = Array.from(basenames)
   return basenames
-    .map(function (basename) {
+    .map(basename => {
       const subset = todos
-        .filter(function (todo) {
-          return todo.basename === basename
-        })
-        .sort(function (a, b) {
+        .filter(todo => todo.basename === basename)
+        .sort((a, b) => {
           return a.line.toLowerCase().localeCompare(b.line.toLowerCase())
         })
       return `
@@ -290,15 +280,13 @@ const continuingRE = /\.\.\./
 
 function processFile (basename, callback) {
   const file = path.join(REPOSITORY, basename)
-  fs.readFile(file, 'utf8', function (error, text) {
+  fs.readFile(file, 'utf8', (error, text) => {
     if (error) return callback(error)
     const lines = text
       .split('\n')
-      .filter(function (element) {
-        return !!element
-      })
+      .filter(element => !!element)
     const results = []
-    lines.forEach(function (line) {
+    lines.forEach(line => {
       const dateMatch = dateRE.exec(line)
       if (dateMatch) {
         const dateString = dateMatch[1]
@@ -327,7 +315,7 @@ function post (request, response) {
   let basename, text, date
   request.pipe(
     new Busboy({ headers: request.headers })
-      .on('field', function (name, value) {
+      .on('field', (name, value) => {
         if (name === 'basename') {
           basename = value.trim()
         } else if (name === 'text') {
@@ -336,27 +324,27 @@ function post (request, response) {
           date = new Date(value)
         }
       })
-      .on('finish', function () {
+      .on('finish', () => {
         request.log.info({ basename, text, date }, 'data')
         const line = text + ' ' + dateToString(date)
         const file = path.join(REPOSITORY, basename)
         runSeries([
-          loggedTask('reset', function (done) {
+          loggedTask('reset', done => {
             resetToOriginMaster(done)
           }),
-          loggedTask('append', function (done) {
+          loggedTask('append', done => {
             fs.appendFile(file, '\n' + line + '\n', done)
           }),
-          loggedTask('git add', function (done) {
+          loggedTask('git add', done => {
             spawnGit(['add', basename], done)
           }),
-          loggedTask('git commit', function (done) {
+          loggedTask('git commit', done => {
             spawnGit(['commit', '--allow-empty-message', '-m', ''], done)
           }),
-          loggedTask('git push', function (done) {
+          loggedTask('git push', done => {
             spawnGit(['push'], done)
           })
-        ], function (error) {
+        ], error => {
           if (error) {
             response.statusCode = 500
             return response.end(error.message)
@@ -367,8 +355,8 @@ function post (request, response) {
         })
 
         function loggedTask (message, task) {
-          return function (done) {
-            task(function (error) {
+          return done => {
+            task(error => {
               request.log.info('start: ' + message)
               if (error) return done(error)
               request.log.info('end: ' + message)
@@ -394,14 +382,12 @@ function refresh (request, response) {
 
 function spawnGit (args, callback) {
   spawn('git', args, { cwd: REPOSITORY })
-    .once('close', function (code) {
+    .once('close', code => {
       if (code === 0) return callback()
       const chunks = []
       process.stderr
-        .on('data', function (chunk) {
-          chunks.push(chunk)
-        })
-        .once('end', function () {
+        .on('data', chunk => { chunks.push(chunk) })
+        .once('end', () => {
           const output = Buffer.concat(chunks).toString()
           const description = `git ${args.join(' ')}`
           callback(new Error(`${description} failed:\n` + output))
@@ -411,32 +397,26 @@ function spawnGit (args, callback) {
 
 function resetToOriginMaster (callback) {
   runSeries([
-    function (done) {
-      spawnGit(['fetch', 'origin'], done)
-    },
-    function (done) {
-      spawnGit(['reset', '--hard', 'origin/master'], done)
-    }
-  ], function (error) {
+    done => { spawnGit(['fetch', 'origin'], done) },
+    done => { spawnGit(['reset', '--hard', 'origin/master'], done) }
+  ], error => {
     if (error) return callback(error)
     lastUpdated = moment().tz(TZ)
     callback()
   })
 }
 
-server.listen(process.env.PORT || 8080, function () {
+server.listen(process.env.PORT || 8080, () => {
   const port = this.address().port
   log.info({ port }, 'listening')
 })
 
-resetToOriginMaster(function () {
-  log.info('reset')
-})
+resetToOriginMaster(() => { log.info('reset') })
 
 const schedule = require('node-schedule')
 const EVERY_TEN_MINUTES = '*/10 * * * *'
-schedule.scheduleJob(EVERY_TEN_MINUTES, function () {
-  resetToOriginMaster(function (error) {
+schedule.scheduleJob(EVERY_TEN_MINUTES, () => {
+  resetToOriginMaster(error => {
     if (error) return log.error(error)
     log.info('reset')
   })
