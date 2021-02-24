@@ -406,7 +406,7 @@ function resetToOriginMaster (callback) {
   })
 }
 
-server.listen(process.env.PORT || 8080, () => {
+server.listen(process.env.PORT || 8080, function () {
   const port = this.address().port
   log.info({ port }, 'listening')
 })
