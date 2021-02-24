@@ -418,7 +418,6 @@ const EVERY_TEN_MINUTES = '*/10 * * * *'
 schedule.scheduleJob(EVERY_TEN_MINUTES, () => {
   resetToOriginMaster(error => {
     if (error) return log.error(error)
-    log.info('reset')
   })
 })
 
