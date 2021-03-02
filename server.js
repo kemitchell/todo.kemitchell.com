@@ -45,16 +45,13 @@ if (!PASSWORD) {
 
 const path = require('path')
 const addLogs = require('pino-http')({ logger: log })
-const parseURL = require('url-parse')
 const refreshPath = '/refresh'
 const server = require('http').createServer((request, response) => {
   addLogs(request, response)
-  const parsed = parseURL(request.url, true)
-  request.query = parsed.query
   const method = request.method
   if (method === 'GET') return get(request, response)
   if (method === 'POST') {
-    if (parsed.pathname === '/refresh') {
+    if (request.url === refreshPath) {
       return refresh(request, response)
     } else {
       return post(request, response)
