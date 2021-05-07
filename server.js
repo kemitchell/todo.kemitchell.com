@@ -327,7 +327,7 @@ function post (request, response) {
         const file = path.join(REPOSITORY, basename)
         runSeries([
           loggedTask('reset', done => {
-            resetToOriginMaster(done)
+            resetToOriginMain(done)
           }),
           loggedTask('append', done => {
             fs.appendFile(file, '\n' + line + '\n', done)
@@ -366,7 +366,7 @@ function post (request, response) {
 }
 
 function refresh (request, response) {
-  resetToOriginMaster(error => {
+  resetToOriginMain(error => {
     if (error) {
       response.statusCode = 500
       response.end(error.toString())
@@ -392,10 +392,10 @@ function spawnGit (args, callback) {
     })
 }
 
-function resetToOriginMaster (callback) {
+function resetToOriginMain (callback) {
   runSeries([
     done => { spawnGit(['fetch', 'origin'], done) },
-    done => { spawnGit(['reset', '--hard', 'origin/master'], done) }
+    done => { spawnGit(['reset', '--hard', 'origin/main'], done) }
   ], error => {
     if (error) return callback(error)
     lastUpdated = moment().tz(TZ)
@@ -408,12 +408,12 @@ server.listen(process.env.PORT || 8080, function () {
   log.info({ port }, 'listening')
 })
 
-resetToOriginMaster(() => { log.info('reset') })
+resetToOriginMain(() => { log.info('reset') })
 
 const schedule = require('node-schedule')
 const EVERY_TEN_MINUTES = '*/10 * * * *'
 schedule.scheduleJob(EVERY_TEN_MINUTES, () => {
-  resetToOriginMaster(error => {
+  resetToOriginMain(error => {
     if (error) return log.error(error)
   })
 })
