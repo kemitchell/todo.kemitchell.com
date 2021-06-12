@@ -202,7 +202,7 @@ th, td {
       <form method=post action=${refreshPath}>
         <input type=submit value="Refresh">
       </form>
-      <h2>New</h2>
+      <h2 id=new>New</h2>
       <form method=post>
         <label for=basename>Client</label>
         <input name=basename type=text list=basenames required>
@@ -213,13 +213,13 @@ th, td {
         <input name=date type=date value=${moment().tz(TZ).format('YYYY-MM-DD')} required>
         <input type=submit>
       </form>
-      <h2>Today</h2>
+      <h2 id=today>Today</h2>
       ${renderTable(dueToday, false)}
-      <h2>Overdue</h2>
+      <h2 id=overdue>Overdue</h2>
       ${renderTable(overdue, true)}
-      <h2>Ongoing</h2>
+      <h2 id=ongoing>Ongoing</h2>
       <div class=columns>${renderLists(ongoing)}</div>
-      <h2>Upcoming</h2>
+      <h2 id=upcoming>Upcoming</h2>
       ${renderTable(upcoming, true)}
     </main>
   </body>
