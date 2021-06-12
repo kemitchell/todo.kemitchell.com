@@ -183,6 +183,10 @@ th, td {
   padding: 0.25rem;
   vertical-align: top;
 }
+
+.twocolumn {
+  columns: 2;
+}
     </style>
   </head>
   <body>
@@ -210,7 +214,7 @@ th, td {
       <h2>Overdue</h2>
       ${renderTable(overdue, true)}
       <h2>Ongoing</h2>
-      ${renderLists(ongoing)}
+      <div class=twocolumn>${renderLists(ongoing)}</div>
       <h2>Upcoming</h2>
       ${renderTable(upcoming, true)}
     </main>
