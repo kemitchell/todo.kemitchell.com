@@ -209,10 +209,10 @@ th, td {
       ${renderTable(dueToday, false)}
       <h2>Overdue</h2>
       ${renderTable(overdue, true)}
-      <h2>Upcoming</h2>
-      ${renderTable(upcoming, true)}
       <h2>Ongoing</h2>
       ${renderLists(ongoing)}
+      <h2>Upcoming</h2>
+      ${renderTable(upcoming, true)}
     </main>
   </body>
 </html>
@@ -261,12 +261,15 @@ function renderLists (todos) {
   })
   basenames = Array.from(basenames)
   return basenames
-    .map(basename => {
-      const subset = todos
-        .filter(todo => todo.basename === basename)
-        .sort((a, b) => {
-          return a.line.toLowerCase().localeCompare(b.line.toLowerCase())
-        })
+    .map(basename => [
+      basename,
+      todos.filter(todo => todo.basename === basename)
+    ])
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([basename, todos]) => {
+      const subset = todos.sort((a, b) => {
+        return a.line.toLowerCase().localeCompare(b.line.toLowerCase())
+      })
       return `
       <h3 id="${escapeHTML(basename)}">${escapeHTML(basename)}</h3>
       <ul>
