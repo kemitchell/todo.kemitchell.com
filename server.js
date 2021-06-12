@@ -111,6 +111,8 @@ function get (request, response) {
     const withDueDate = []
     const todayMoment = moment()
     const dueToday = []
+    const overdue = []
+    const upcoming = []
     const ongoing = []
     const basenames = new Set()
     todos.forEach(todo => {
@@ -121,8 +123,15 @@ function get (request, response) {
         if (todoMoment.isSame(todayMoment, 'day')) {
           todo.today = true
           dueToday.push(todo)
+        } else if (todoMoment.isBefore(todayMoment, 'day')) {
+          todo.overdue = true
+          overdue.push(todo)
+        } else {
+          upcoming.push(todo)
         }
-      } else ongoing.push(todo)
+      } else {
+        ongoing.push(todo)
+      }
     })
     ongoing.sort((a, b) => a.basename.localeCompare(b.basename))
     const options = Array.from(basenames).map(basename => {
@@ -198,8 +207,10 @@ th, td {
       </form>
       <h2>Today</h2>
       ${renderTable(dueToday, false)}
-      <h2>Tasks</h2>
-      ${renderTable(withDueDate, true)}
+      <h2>Overdue</h2>
+      ${renderTable(overdue, true)}
+      <h2>Upcoming</h2>
+      ${renderTable(upcoming, true)}
       <h2>Ongoing</h2>
       ${renderLists(ongoing)}
     </main>
