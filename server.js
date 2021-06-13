@@ -188,6 +188,10 @@ th, td {
   columns: 3;
 }
 
+.columns h3 {
+  break-after: avoid;
+}
+
 .columns ul {
   break-indie: avoid-column;
 }
