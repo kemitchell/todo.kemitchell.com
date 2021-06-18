@@ -170,7 +170,7 @@ input {
   display: block;
   width: 100%;
   margin: 0.5rem 0;
-  padding: 0.25rem;
+  padding: 0.5rem;
   box-sizing: border-box;
 }
 
