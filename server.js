@@ -208,12 +208,9 @@ th, td {
       </form>
       <h2 id=new>New</h2>
       <form method=post>
-        <label for=basename>Client</label>
-        <input name=basename type=text list=basenames required>
+        <input placeholder=client name=basename type=text list=basenames required>
         <datalist id=basenames>${options}</datalist>
-        <label for=text>Text</label>
-        <input name=text type=text required>
-        <label for=Date>Date</label>
+        <input placeholder=text name=text type=text required>
         <input name=date type=date value=${moment().tz(TZ).format('YYYY-MM-DD')} required>
         <input type=submit>
       </form>
