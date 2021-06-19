@@ -73,6 +73,10 @@ const logos = [
   { emoji: '💸', files: ['tax'] },
   { emoji: '⚖️"', files: ['practice'] },
   {
+    image: 'waypoint.svg',
+    files: ['waypoint']
+  },
+  {
     image: 'discourse.svg',
     files: ['discourse', 'hawk']
   },
