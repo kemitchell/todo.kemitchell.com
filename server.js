@@ -277,8 +277,7 @@ function renderTable (todos, dateColumn) {
     return `
 <tr class=${status}>
   <td>
-    ${logo ? `<img class=logo src=/${logo.image}>` : ''}
-    ${escapeHTML(basename)}
+    ${logo ? `<img class=logo src=/${logo.image}>` : ''}&nbsp;${escapeHTML(basename)}
   </td>
   <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
   ${dateColumn ? `<td title="${todo.dateString}">${dateString}</td>` : ''}
