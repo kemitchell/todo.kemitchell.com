@@ -69,6 +69,9 @@ const moment = require('moment-timezone')
 const linkifyURLs = require('linkify-urls')
 
 const TZ = 'America/Los_Angeles'
+const logos = [
+  ['discourse', ['discourse', 'hawk']]
+]
 
 function get (request, response) {
   const auth = basicAuth(request)
@@ -76,6 +79,13 @@ function get (request, response) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
+  }
+  for (const logo in logos) {
+    const name = logo[0]
+    if (request.url === `/${name}.svg`) {
+      return fs.createReadStream(`logos/${name}.svg`)
+        .pipe(response)
+    }
   }
   fs.readdir(REPOSITORY, (error, entries) => {
     if (error) return internalError(error)
@@ -195,6 +205,12 @@ th, td {
 .columns ul {
   break-indie: avoid-column;
 }
+
+.logo {
+  display: inline;
+  max-height: 1rem;
+  max-width: 1rem;
+}
     </style>
   </head>
   <body>
@@ -253,9 +269,14 @@ function renderTable (todos, dateColumn) {
       if (todo.today) dateString = 'today'
       else dateString = todoMoment.startOf('day').fromNow()
     }
+    const basename = todo.basename
+    const logo = logos.find(logo => logo[1].includes(basename))
     return `
 <tr class=${status}>
-  <td>${escapeHTML(todo.basename)}</td>
+  <td>
+    ${logo ? `<img class=logo src=/${logo[0].svg}>` : ''}
+    ${escapeHTML(basename)}
+  </td>
   <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
   ${dateColumn ? `<td title="${todo.dateString}">${dateString}</td>` : ''}
 </tr>
