@@ -70,10 +70,8 @@ const linkifyURLs = require('linkify-urls')
 
 const TZ = 'America/Los_Angeles'
 const logos = [
-  {
-    emoji: '💸',
-    files: ['tax']
-  },
+  { emoji: '💸', files: ['tax'] },
+  { emoji: '⚖️"', files: ['practice'] }
   {
     image: 'discourse.svg',
     files: ['discourse', 'hawk']
