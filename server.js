@@ -83,7 +83,7 @@ function get (request, response) {
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
   }
-  for (const { image } in logos) {
+  for (const { image } of logos) {
     if (request.url === '/' + image) {
       return fs.createReadStream(`logos/${image}`)
         .pipe(response)
