@@ -79,6 +79,10 @@ const logos = [
     files: ['evilmartians']
   },
   {
+    image: 'blueoak.svg',
+    files: ['blueoak']
+  },
+  {
     image: 'freecodecamp.svg',
     files: ['freecodecamp']
   }
