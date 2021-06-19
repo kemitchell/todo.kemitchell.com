@@ -71,6 +71,10 @@ const linkifyURLs = require('linkify-urls')
 const TZ = 'America/Los_Angeles'
 const logos = [
   {
+    emoji: '💸',
+    files: ['tax']
+  },
+  {
     image: 'discourse.svg',
     files: ['discourse', 'hawk']
   },
@@ -498,5 +502,7 @@ function compareDateStrings (a, b) {
 function logoFor (basename) {
   const logo = logos.find(logo => logo.files.includes(basename))
   if (!logo) return ''
-  return `<img class=logo src=/${logo.image}>`
+  if (logo.image) return `<img class=logo src=/${logo.image}>`
+  if (logo.emoji) return `<span class=logo>${logo.emoji}</span>`
+  return ''
 }
