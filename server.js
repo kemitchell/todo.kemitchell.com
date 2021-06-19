@@ -73,6 +73,10 @@ const logos = [
   {
     image: 'discourse.svg',
     files: ['discourse', 'hawk']
+  },
+  {
+    image: 'evilmartians.svg',
+    files: ['evilmartians']
   }
 ]
 
