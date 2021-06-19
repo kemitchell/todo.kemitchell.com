@@ -72,6 +72,7 @@ const TZ = 'America/Los_Angeles'
 const logos = [
   { emoji: '💸', files: ['tax'] },
   { emoji: '⚖️"', files: ['practice'] },
+  { emoji: '💧', files: ['waterboy'] },
   {
     image: 'waypoint.svg',
     files: ['waypoint']
