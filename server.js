@@ -196,7 +196,7 @@ input {
 }
 
 header, main {
-  max-width: 40rem;
+  max-width: 50rem;
   margin: 1rem auto;
 }
 
