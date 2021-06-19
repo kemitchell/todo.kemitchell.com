@@ -211,8 +211,8 @@ th, td {
 
 .logo {
   display: inline;
-  max-height: 1rem;
-  max-width: 1rem;
+  max-height: 1.5ex;
+  max-width: 1.5ex;
 }
     </style>
   </head>
