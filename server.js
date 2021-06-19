@@ -70,7 +70,10 @@ const linkifyURLs = require('linkify-urls')
 
 const TZ = 'America/Los_Angeles'
 const logos = [
-  ['discourse', ['discourse', 'hawk']]
+  {
+    image: 'discourse.svg',
+    files: ['discourse', 'hawk']
+  }
 ]
 
 function get (request, response) {
@@ -80,10 +83,9 @@ function get (request, response) {
     response.setHeader('WWW-Authenticate', 'Basic realm=todo')
     return response.end()
   }
-  for (const logo in logos) {
-    const name = logo[0]
-    if (request.url === `/${name}.svg`) {
-      return fs.createReadStream(`logos/${name}.svg`)
+  for (const { image } in logos) {
+    if (request.url === '/' + image) {
+      return fs.createReadStream(`logos/${image}`)
         .pipe(response)
     }
   }
@@ -270,11 +272,11 @@ function renderTable (todos, dateColumn) {
       else dateString = todoMoment.startOf('day').fromNow()
     }
     const basename = todo.basename
-    const logo = logos.find(logo => logo[1].includes(basename))
+    const logo = logos.find(logo => logo.files.includes(basename))
     return `
 <tr class=${status}>
   <td>
-    ${logo ? `<img class=logo src=/${logo[0].svg}>` : ''}
+    ${logo ? `<img class=logo src=/${logo.image}>` : ''}
     ${escapeHTML(basename)}
   </td>
   <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
