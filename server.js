@@ -214,6 +214,10 @@ th, td {
   max-height: 1.5ex;
   max-width: 1.5ex;
 }
+
+.file {
+  white-space: nowrap;
+}
     </style>
   </head>
   <body>
@@ -273,11 +277,10 @@ function renderTable (todos, dateColumn) {
       else dateString = todoMoment.startOf('day').fromNow()
     }
     const basename = todo.basename
-    const logo = logos.find(logo => logo.files.includes(basename))
     return `
 <tr class=${status}>
-  <td>
-    ${logo ? `<img class=logo src=/${logo.image}>` : ''}${escapeHTML(basename)}
+  <td class=file>
+    ${logoFor(basename)}${escapeHTML(basename)}
   </td>
   <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
   ${dateColumn ? `<td title="${todo.dateString}">${dateString}</td>` : ''}
@@ -303,7 +306,9 @@ function renderLists (todos) {
         return a.line.toLowerCase().localeCompare(b.line.toLowerCase())
       })
       return `
-      <h3 id="${escapeHTML(basename)}">${escapeHTML(basename)}</h3>
+      <h3 id="${escapeHTML(basename)}">
+        ${logoFor(basename)}${escapeHTML(basename)}
+      </h3>
       <ul>
         ${subset.map((todo) => `<li>${lineToDisplay(todo)}</li>`).join('')}
       </ul>
@@ -474,4 +479,10 @@ function dateToString (date) {
 
 function compareDateStrings (a, b) {
   return a.trim().localeCompare(b.trim())
+}
+
+function logoFor (basename) {
+  const logo = logos.find(logo => logo.files.includes(basename))
+  if (!logo) return ''
+  return `<img class=logo src=/${logo.image}>`
 }
