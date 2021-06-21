@@ -77,6 +77,7 @@ const logos = [
     image: 'waypoint.svg',
     files: ['waypoint']
   },
+  { image: 'lugg.svg', files: ['lugg'] },
   {
     image: 'fontawesome.svg',
     files: ['fontawesome']
