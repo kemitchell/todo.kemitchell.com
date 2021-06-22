@@ -223,7 +223,6 @@ th, td {
 
 .logo {
   display: inline;
-  margin-right: 0.5ex;
   max-height: 1.5ex;
   max-width: 1.5ex;
   user-select: none;
