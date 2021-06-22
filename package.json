@@ -11,7 +11,8 @@
     "pino": "^6.11.3",
     "pino-http": "^5.5.0",
     "run-parallel": "^1.2.0",
-    "run-series": "^1.1.9"
+    "run-series": "^1.1.9",
+    "send": "^0.17.1"
   },
   "devDependencies": {
     "licensee": "^8.2.0",

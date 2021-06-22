@@ -90,6 +90,8 @@ const logos = [
   { image: 'freecodecamp.svg', files: ['freecodecamp'] }
 ]
 
+const send = require('send')
+
 function get (request, response) {
   const auth = basicAuth(request)
   if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
@@ -99,9 +101,7 @@ function get (request, response) {
   }
   for (const { image } of logos) {
     if (request.url === '/' + image) {
-      response.setHeader('Content-Type', image.endsWith('.svg') ? 'image/svg+xml' : 'image/png')
-      return fs.createReadStream(`logos/${image}`)
-        .pipe(response)
+      return send(request, `logos/${image}`).pipe(response)
     }
   }
   fs.readdir(REPOSITORY, (error, entries) => {
