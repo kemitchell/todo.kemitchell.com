@@ -236,6 +236,14 @@ th, td {
 .file, .duedate {
   white-space: nowrap;
 }
+
+h3 {
+  position: relative;
+}
+
+h3 img {
+  left: -1rem;
+}
     </style>
   </head>
   <body>
