@@ -170,6 +170,10 @@ table {
   border-collapse: collapse;
 }
 
+th {
+  text-align: left;
+}
+
 a[href] {
   color:inherit;
   text-decoration: none;
