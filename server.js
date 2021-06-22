@@ -293,9 +293,8 @@ function renderTable (todos, dateColumn) {
     const basename = todo.basename
     return `
 <tr class=${status}>
-  <th class=file>
-    ${logoFor(basename)}${escapeHTML(basename)}
-  </th>
+  <td class=logo>${logoFor(basename)}</td>
+  <th class=file>${escapeHTML(basename)}</th>
   <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
   ${dateColumn ? `<td class=duedate title="${todo.dateString}">${dateString}</td>` : ''}
 </tr>
