@@ -76,7 +76,7 @@ const logos = [
   { image: 'waypoint.svg', files: ['waypoint'] },
   { image: 'lugg.svg', files: ['lugg'] },
   { image: 'fontawesome.svg', files: ['fontawesome'] },
-  { image: 'discourse.svg', files: ['discourse', 'hawk'] },
+  { image: 'discourse.svg', files: ['cdck', 'discourse', 'hawk'] },
   { image: 'evilmartians.svg', files: ['evilmartians'] },
   { image: 'blueoak.svg', files: ['blueoak'] },
   { image: 'freecodecamp.svg', files: ['freecodecamp'] }
