@@ -98,7 +98,7 @@ function get (request, response) {
   }
   for (const { image } of logos) {
     if (request.url === '/' + image) {
-      response.setHeader('Content-Type', 'image/svg+xml')
+      response.setHeader('Content-Type', image.endsWith('.svg') ? 'image/svg+xml' : 'image/png')
       return fs.createReadStream(`logos/${image}`)
         .pipe(response)
     }
