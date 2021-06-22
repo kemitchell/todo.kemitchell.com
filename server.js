@@ -242,7 +242,8 @@ h3 {
 }
 
 h3 img {
-  left: -1rem;
+  position: relative;
+  left: -0.5rem;
 }
     </style>
   </head>
