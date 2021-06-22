@@ -289,9 +289,9 @@ function renderTable (todos, dateColumn) {
     const basename = todo.basename
     return `
 <tr class=${status}>
-  <td class=file>
+  <th class=file>
     ${logoFor(basename)}${escapeHTML(basename)}
-  </td>
+  </th>
   <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
   ${dateColumn ? `<td title="${todo.dateString}">${dateString}</td>` : ''}
 </tr>
