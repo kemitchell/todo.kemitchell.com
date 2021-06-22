@@ -78,6 +78,7 @@ const logos = [
   { emoji: '💧', files: ['waterboy'] },
   { image: 'artless.svg', files: ['artless'] },
   { image: 'ladybug.png', files: ['ladybugtools'] },
+  { image: 'blockchaincommons.png', files: ['blockchaincommons'] },
   { image: 'waypoint.svg', files: ['waypoint'] },
   { image: 'indiecc.svg', files: ['indiecc'] },
   { image: 'polyform.svg', files: ['polyform'] },
