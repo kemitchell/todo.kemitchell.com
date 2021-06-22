@@ -74,6 +74,7 @@ const logos = [
   { emoji: '💸', files: ['tax'] },
   { emoji: '⚖️', files: ['practice'] },
   { emoji: '💧', files: ['waterboy'] },
+  { image: 'artless.svg', files: ['artless'] },
   { image: 'waypoint.svg', files: ['waypoint'] },
   { image: 'indiecc.svg', files: ['indiecc'] },
   { image: 'polyform.svg', files: ['polyform'] },
