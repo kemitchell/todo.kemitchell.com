@@ -229,7 +229,7 @@ th, td {
   user-select: none;
 }
 
-.file {
+.file, .duedate {
   white-space: nowrap;
 }
     </style>
@@ -297,7 +297,7 @@ function renderTable (todos, dateColumn) {
     ${logoFor(basename)}${escapeHTML(basename)}
   </th>
   <td>${linkifyURLs(escapeHTML(lineToDisplay(todo)))}</td>
-  ${dateColumn ? `<td title="${todo.dateString}">${dateString}</td>` : ''}
+  ${dateColumn ? `<td class=duedate title="${todo.dateString}">${dateString}</td>` : ''}
 </tr>
     `.trim()
   }
