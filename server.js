@@ -224,7 +224,7 @@ th, td {
 }
 
 .columns ul {
-  break-indie: avoid-column;
+  break-inside: avoid-column;
 }
 
 .logo {
