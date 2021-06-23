@@ -235,10 +235,10 @@ th, td {
 }
 
 .logo {
-  display: inline;
   max-height: 1.5ex;
   max-width: 1.5ex;
   user-select: none;
+  vertical-align: middle;
 }
 
 .file, .duedate {
