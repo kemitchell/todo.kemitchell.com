@@ -227,6 +227,10 @@ th, td {
   break-inside: avoid-column;
 }
 
+.noBreak {
+  break-inside: avoid-column;
+}
+
 .logo {
   display: inline;
   max-height: 1.5ex;
@@ -333,12 +337,14 @@ function renderLists (todos) {
         return a.line.toLowerCase().localeCompare(b.line.toLowerCase())
       })
       return `
+      <div class=noBreak>
       <h3 id="${escapeHTML(basename)}">
         ${logoFor(basename)}${escapeHTML(basename)}
       </h3>
       <ul>
         ${subset.map((todo) => `<li>${lineToDisplay(todo)}</li>`).join('')}
       </ul>
+      </div>
       `.trim()
     })
     .join('')
